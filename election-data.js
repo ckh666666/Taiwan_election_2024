@@ -687,6 +687,12 @@ function updateLegendColors(party) {
 
 // ===== 智能更新排行榜显示 =====
 function updateRankingDisplaySmart() {
+    // 如果是获胜党票数排行模式，跳过此函数，由 winner-ranking.js 处理
+    if (currentParty === 'winner-ranking') {
+        console.log('⏭️ 当前为获胜党票数排行模式，跳过 updateRankingDisplaySmart');
+        return;
+    }
+    
     console.log('🔍 updateRankingDisplaySmart - 开始执行');
     console.log('🔍 updateRankingDisplaySmart - currentParty:', currentParty);
     console.log('🔍 updateRankingDisplaySmart - districtMapState:', window.districtMapState);
@@ -694,6 +700,12 @@ function updateRankingDisplaySmart() {
     
     // 延迟执行，确保视图状态已经正确设置
     setTimeout(() => {
+        // 再次检查，因为可能在延迟期间切换了模式
+        if (currentParty === 'winner-ranking') {
+            console.log('⏭️ 延迟期间切换到获胜党票数排行模式，跳过更新');
+            return;
+        }
+        
         console.log('🔍 updateRankingDisplaySmart - 延迟执行开始');
         console.log('🔍 updateRankingDisplaySmart - 延迟后 districtMapState:', window.districtMapState);
         console.log('🔍 updateRankingDisplaySmart - 延迟后 currentView:', window.districtMapState ? window.districtMapState.currentView : 'undefined');
@@ -719,6 +731,12 @@ function updateRankingDisplaySmart() {
 
 // ===== 更新排行榜显示 =====
 function updateRankingDisplay() {
+    // 如果是获胜党票数排行模式，跳过此函数，由 winner-ranking.js 处理
+    if (currentParty === 'winner-ranking') {
+        console.log('⏭️ 当前为获胜党票数排行模式，跳过 updateRankingDisplay');
+        return;
+    }
+    
     const rankingList = document.getElementById('ranking-list');
     const rankingTitle = document.getElementById('ranking-title');
     if (!rankingList) return;
@@ -979,6 +997,13 @@ function initializeEventListeners() {
     document.querySelectorAll('.party-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const party = btn.dataset.party;
+            
+            // 如果是获胜党票数排行模式，跳过此处理，由 winner-ranking.js 处理
+            if (party === 'winner-ranking') {
+                console.log('⏭️ 获胜党票数排行模式，跳过 election-data.js 的事件处理');
+                return;
+            }
+            
             switchParty(party);
             
             // 显示/隐藏获胜党派模式控制
