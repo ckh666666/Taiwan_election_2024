@@ -2,8 +2,23 @@
 
 // 计算获胜党数据
 function calculateWinnerData() {
-    return electionData.map(region => {
+    // 确保使用全局的 electionData
+    const data = window.electionData || electionData;
+    
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        console.error('❌ electionData 未加载或为空');
+        return [];
+    }
+    
+    return data.map(region => {
         const { kmt_votes, dpp_votes, tpp_votes, region: regionName, total_votes } = region;
+        
+        // 验证数据有效性
+        if (!total_votes || total_votes === 0) {
+            console.warn(`⚠️ ${regionName} 的 total_votes 无效:`, total_votes);
+            return null;
+        }
+        
         const votes = [kmt_votes, dpp_votes, tpp_votes];
         const parties = ['kmt', 'dpp', 'tpp'];
         const partyNames = ['中国国民党', '民主进步党', '台湾民众党'];
@@ -22,7 +37,7 @@ function calculateWinnerData() {
             dpp_rate: (dpp_votes / total_votes * 100).toFixed(2),
             tpp_rate: (tpp_votes / total_votes * 100).toFixed(2)
         };
-    });
+    }).filter(item => item !== null); // 过滤掉无效数据
 }
 
 // 获胜党配置 - 根据党派使用不同颜色
@@ -99,7 +114,29 @@ function getWinnerColor(winner, votes) {
 
 // 生成获胜党排行
 function generateWinnerRanking() {
+    console.log('🎯 generateWinnerRanking - 开始执行');
+    
+    // 检查数据是否已加载
+    const data = window.electionData || electionData;
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('⚠️ electionData 未加载，延迟执行');
+        // 延迟重试，确保数据已加载
+        setTimeout(() => {
+            generateWinnerRanking();
+        }, 100);
+        return;
+    }
+    
+    console.log('✅ electionData 已加载，数据条数:', data.length);
+    
     const winnerData = calculateWinnerData();
+    
+    if (!winnerData || winnerData.length === 0) {
+        console.error('❌ calculateWinnerData 返回空数据');
+        return;
+    }
+    
+    console.log('✅ winnerData 计算完成，数据条数:', winnerData.length);
     
     // 按获胜党得票数排序
     const sortedData = winnerData.sort((a, b) => b.winner_votes - a.winner_votes);
@@ -115,6 +152,12 @@ function generateWinnerRanking() {
         rankingList.innerHTML = '';
         
         sortedData.forEach((item, index) => {
+            // 再次验证数据有效性
+            if (!item || !item.winner_rate || item.winner_rate === 'NaN%') {
+                console.warn(`⚠️ 跳过无效数据: ${item?.region || '未知'}`);
+                return;
+            }
+            
             const rankingItem = document.createElement('div');
             rankingItem.className = 'ranking-item winner-ranking-item';
             rankingItem.setAttribute('data-region', item.region);
@@ -144,6 +187,10 @@ function generateWinnerRanking() {
             
             rankingList.appendChild(rankingItem);
         });
+        
+        console.log('✅ 排行榜生成完成，共', sortedData.length, '条数据');
+    } else {
+        console.error('❌ ranking-list 元素未找到');
     }
 }
 
